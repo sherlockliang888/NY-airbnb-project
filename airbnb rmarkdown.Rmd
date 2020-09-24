@@ -8,7 +8,8 @@ output: html_document
 
 This data file contains information on Airbnb in New York City, including all needed information about hosts, availability, geography and etc. The aim of this project is cleaning and exploring the data file, and make sure the following questions are answered. 
 
-1) availability?
+
+1) How many observations can be made if we adjust the data size according to last review date and availability? 
 2) which neighbourhood group has the highest average price in 2019?
 3) What can we learn about different hosts?
 4) Which hosts and areas are the busiest and why? 
@@ -36,7 +37,8 @@ AB_NYC <- AB_NYC %>% select(-c(17, 18, 19))
 ```
 As seen from the plot, most missing values occur in the last three columns as they are empty and some occur in the column "last review". As a result, we are removing columns 17-19. 
 
-Choose data in 2019 
+Choose data recording to the last review date that is in 2019. 
+
 ```{r message=FALSE}
 AB_NYC_2019 <- AB_NYC %>% 
   drop_na(last_review) %>%
@@ -66,5 +68,28 @@ AB_NYC_2019_fixed <-
   AB_NYC_2019 %>% 
   filter(availability_365 <= 365)
 ```
+
+
+Thus, in the end, we have reduced the data size from `r nrow(AB_NYC)` to `r nrow(AB_NYC_2019_fixed)`. Note that in this scenario, the two outliers can be deleted because the data size still remains large after such procedure, so that the outcome won't change much. However, if the data size is limited, it is best to take an educated guess at the two outliers of what they could possibly be. For example, the availabilities are 400 and 500 days, but it is plausible that these two pieces of data were mistyped and should have been 40 and 50 days. 
+
+To answer question 2), let's first take a look at all the neighbourhood group we have in hand. 
+```{r}
+AB_NYC_2019_fixed %>%
+  count(neighbourhood_group)
+```
+we find some typos in the names of neighbourhood group, thus we need to change them. 
+```{r}
+AB_NYC_2019_updated <- 
+AB_NYC_2019_fixed %>% 
+  mutate(neighbourhood_group_collapsed = 
+           fct_collapse(neighbourhood_group, 
+                        Bronx = "Broncx", Manhattan = "Manhatan", Queens = "Queen")) 
+AB_NYC_2019_updated %>% 
+  filter(price > 0) %>%
+  group_by(neighbourhood_group_collapsed) %>%
+  summarise(avg_price = mean(price)) %>%
+  arrange(desc(avg_price))
+```
+
 
 
