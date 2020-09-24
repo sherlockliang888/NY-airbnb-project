@@ -1,0 +1,70 @@
+---
+title: "Airbnb project"
+author: "Fengshou Liang"
+date: "2020-9-23"
+output: html_document
+---
+
+
+This data file contains information on Airbnb in New York City, including all needed information about hosts, availability, geography and etc. The aim of this project is cleaning and exploring the data file, and make sure the following questions are answered. 
+
+1) availability?
+2) which neighbourhood group has the highest average price in 2019?
+3) What can we learn about different hosts?
+4) Which hosts and areas are the busiest and why? 
+
+
+First load relevant packages needed for inspection. 
+```{r message = FALSE}
+library(tidyverse)
+library(dplyr)
+library(readr)
+```
+
+Load data and take a look at the first 6 observations. 
+```{r echo=FALSE, results='hide', message=FALSE, warning= FALSE}
+AB_NYC <- read_csv("C:/Users/good/Downloads/AB_NYC_2019.csv/AB_NYC_2019.csv")
+```
+```{r}
+head(AB_NYC)
+```
+Now we want to see the distribution of missing values, and this can be done in an interesting way by using the visdat package, but it is better not to use this method when the data size is too big. 
+```{r warning= FALSE}
+library(visdat)
+vis_miss(AB_NYC, warn_large_data = FALSE)
+AB_NYC <- AB_NYC %>% select(-c(17, 18, 19))
+```
+As seen from the plot, most missing values occur in the last three columns as they are empty and some occur in the column "last review". As a result, we are removing columns 17-19. 
+
+Choose data in 2019 
+```{r message=FALSE}
+AB_NYC_2019 <- AB_NYC %>% 
+  drop_na(last_review) %>%
+  #remove na in column last_review
+  filter(last_review >= "2019-1-01" & last_review < "2020-1-01")
+
+##make sure there is no missing date in 2019
+library(assertive)
+assert_all_are_not_na(AB_NYC_2019$last_review)
+```
+
+Now let's take a look at availibilty of airbnb and make sure there is no strange value. 
+```{r}
+hist(AB_NYC_2019$availability_365, breaks = 50, main = "Histogram of 2019 airbnb availibility", xlab="Available days")
+boxplot(AB_NYC_2019$availability_365, main="Boxplot of 2019 airbnb availibility", ylab = "Available days")
+```
+
+Although the histogram appears to be acceptable, the boxplot shows there might be some obsurdities. In fact, there are observations which have availibilty more than 365 days. 
+```{r}
+AB_NYC_2019 %>%
+  drop_na(availability_365) %>%
+  filter(availability_365 > 365)
+```
+After excluding the two observations outside of range (0-365), we have a new dataset. 
+```{r}
+AB_NYC_2019_fixed <-
+  AB_NYC_2019 %>% 
+  filter(availability_365 <= 365)
+```
+
+
