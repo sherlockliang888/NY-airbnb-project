@@ -8,6 +8,7 @@ output: html_document
 
 This data file contains information on Airbnb in New York City, including all needed information about hosts, availability, geography and etc. The aim of this project is cleaning and exploring the data file, and make sure the following questions are answered. 
 
+
 1) How many observations can be made if we adjust the data size according to last review date and availability? 
 2) which neighbourhood group has the highest average price in 2019?
 3) What can we learn about different hosts?
@@ -37,6 +38,7 @@ AB_NYC <- AB_NYC %>% select(-c(17, 18, 19))
 As seen from the plot, most missing values occur in the last three columns as they are empty and some occur in the column "last review". As a result, we are removing columns 17-19. 
 
 Choose data recording to the last review date that is in 2019. 
+
 ```{r message=FALSE}
 AB_NYC_2019 <- AB_NYC %>% 
   drop_na(last_review) %>%
@@ -66,6 +68,7 @@ AB_NYC_2019_fixed <-
   AB_NYC_2019 %>% 
   filter(availability_365 <= 365)
 ```
+
 
 Thus, in the end, we have reduced the data size from `r nrow(AB_NYC)` to `r nrow(AB_NYC_2019_fixed)`. Note that in this scenario, the two outliers can be deleted because the data size still remains large after such procedure, so that the outcome won't change much. However, if the data size is limited, it is best to take an educated guess at the two outliers of what they could possibly be. For example, the availabilities are 400 and 500 days, but it is plausible that these two pieces of data were mistyped and should have been 40 and 50 days. 
 
